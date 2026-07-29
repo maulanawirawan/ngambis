@@ -22,7 +22,7 @@ export function InviteManager({
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState<string | null>(null);
   const [usernameSearch, setUsernameSearch] = useState("");
-  const [searchResults, setSearchResults] = useState<Profile[]>([]);
+  const [searchResults, setSearchResults] = useState<Pick<Profile, "id" | "username" | "display_name">[]>([]);
   const [searching, setSearching] = useState(false);
 
   async function handleCreateInvite() {
