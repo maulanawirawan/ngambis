@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 import {
@@ -183,6 +183,13 @@ export function BoardView({ user, boards: initialBoards, members, circleIds }: B
     return card?.stage_id || null;
   }
 
+  useEffect(() => {
+    setBoards(initialBoards);
+    if (initialBoards.length > 0) {
+      setActiveBoard((prev) => prev || initialBoards[0]);
+    }
+  }, [initialBoards]);
+
   const [creatingBoard, setCreatingBoard] = useState(false);
 
   async function handleCreateBoard() {
@@ -257,6 +264,28 @@ export function BoardView({ user, boards: initialBoards, members, circleIds }: B
         return;
       }
 
+      // Optimistically show board on UI immediately
+      const newBoard: PlanningBoard = {
+        id: boardId,
+        circle_id: targetCircleId,
+        owner_id: user.id,
+        name: "Board Utama",
+        visibility: "circle",
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        stages: defaultStages.map((s) => ({
+          id: s.id,
+          board_id: boardId,
+          name: s.name,
+          position: s.position,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+          cards: [],
+        })),
+      };
+
+      setBoards([newBoard]);
+      setActiveBoard(newBoard);
       router.refresh();
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Terjadi kesalahan.");
