@@ -37,7 +37,7 @@ export default function LoginPage() {
     });
 
     if (authError) {
-      setError("Email atau password salah. Coba lagi ya.");
+      setError(authError.message || "Email atau password salah. Coba lagi ya.");
       setLoading(false);
       return;
     }

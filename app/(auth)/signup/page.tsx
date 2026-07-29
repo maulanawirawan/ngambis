@@ -47,7 +47,7 @@ export default function SignUpPage() {
       return;
     }
 
-    const { error: authError } = await supabase.auth.signUp({
+    const { data: signUpData, error: authError } = await supabase.auth.signUp({
       email: result.data.email,
       password: result.data.password,
       options: {
@@ -59,8 +59,15 @@ export default function SignUpPage() {
     });
 
     if (authError) {
-      setError("Gagal membuat akun. Coba lagi ya.");
+      setError(authError.message || "Gagal membuat akun. Coba lagi ya.");
       setLoading(false);
+      return;
+    }
+
+    if (signUpData?.user && !signUpData?.session) {
+      setError(null);
+      alert("Akun berhasil dibuat! Silakan cek email kamu untuk konfirmasi pendaftaran, atau langsung login.");
+      router.push("/login");
       return;
     }
 
