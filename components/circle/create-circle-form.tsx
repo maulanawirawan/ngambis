@@ -58,23 +58,23 @@ export function CreateCircleForm({ onClose }: CreateCircleFormProps) {
       });
     }
 
-    // Generate slug
+    // Generate circle ID and slug
+    const circleId = crypto.randomUUID();
     const slug = name
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, "-")
       .replace(/^-|-$/g, "");
 
     // Create circle
-    const { data: circle, error: createError } = await supabase
+    const { error: createError } = await supabase
       .from("circles")
       .insert({
+        id: circleId,
         name,
         slug: `${slug}-${Date.now().toString(36)}`,
         accent,
         created_by: user.id,
-      })
-      .select()
-      .single();
+      });
 
     if (createError) {
       setError(createError.message || "Gagal membuat circle. Coba lagi.");
@@ -84,7 +84,7 @@ export function CreateCircleForm({ onClose }: CreateCircleFormProps) {
 
     // Add creator as owner
     const { error: memberError } = await supabase.from("circle_members").insert({
-      circle_id: circle.id,
+      circle_id: circleId,
       user_id: user.id,
       role: "owner",
       status: "active",
