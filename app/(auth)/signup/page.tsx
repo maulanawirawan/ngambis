@@ -13,6 +13,8 @@ export default function SignUpPage() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [registeredEmail, setRegisteredEmail] = useState("");
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -68,8 +70,9 @@ export default function SignUpPage() {
 
     if (signUpData?.user && !signUpData?.session) {
       setError(null);
-      alert("Akun berhasil dibuat! Silakan cek email kamu untuk konfirmasi pendaftaran, atau langsung login.");
-      router.push("/login");
+      setRegisteredEmail(result.data.email);
+      setShowSuccessModal(true);
+      setLoading(false);
       return;
     }
 
@@ -78,7 +81,7 @@ export default function SignUpPage() {
   }
 
   return (
-    <div className="flex min-h-dvh items-center justify-center bg-canvas p-8">
+    <div className="relative flex min-h-dvh items-center justify-center bg-canvas p-8">
       <div className="w-full max-w-sm">
         <div className="mb-13 text-center">
           <BookStar className="mx-auto mb-8 h-16 w-16 text-coral" />
@@ -143,23 +146,27 @@ export default function SignUpPage() {
             <label htmlFor="password" className="mb-2 block text-sm font-medium text-ink">
               Password
             </label>
-            <div className="relative">
+            <div className="relative flex items-center">
               <input
                 id="password"
                 name="password"
                 type={showPassword ? "text" : "password"}
                 required
                 autoComplete="new-password"
-                className="focus-ring w-full rounded-input border border-clay bg-paper px-4 py-3 pr-11 text-ink placeholder:text-ink/40"
+                className="focus-ring w-full rounded-input border border-clay bg-paper py-3 pl-4 pr-12 text-ink placeholder:text-ink/40"
                 placeholder="Minimal 8 karakter"
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-ink/50 hover:text-ink focus:outline-none"
+                className="absolute right-2 flex h-9 w-9 items-center justify-center rounded-full text-ink/60 transition-colors hover:bg-clay/20 hover:text-ink focus:outline-none"
                 aria-label={showPassword ? "Sembunyikan password" : "Tampilkan password"}
               >
-                {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                {showPassword ? (
+                  <EyeOff className="h-5 w-5 shrink-0" />
+                ) : (
+                  <Eye className="h-5 w-5 shrink-0" />
+                )}
               </button>
             </div>
           </div>
@@ -175,11 +182,36 @@ export default function SignUpPage() {
 
         <div className="mt-8 text-center text-sm text-ink/60">
           <span>Sudah punya akun?</span>
-          <Link href="/login" className="ml-1 hover:text-coral focus-ring rounded">
+          <Link href="/login" className="ml-1 hover:text-coral focus-ring rounded font-medium text-coral">
             Masuk di sini
           </Link>
         </div>
       </div>
+
+      {/* Custom Aesthetic Success Modal */}
+      {showSuccessModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-ink/40 p-4 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="w-full max-w-md rounded-2xl border border-clay/50 bg-paper p-6 shadow-2xl">
+            <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-moss/20 text-moss">
+              <BookStar className="h-8 w-8 text-moss" />
+            </div>
+            <h3 className="text-center font-display text-2xl font-bold text-ink">
+              Akun Berhasil Dibuat! 🎉
+            </h3>
+            <p className="mt-3 text-center text-sm leading-relaxed text-ink/70">
+              Silakan cek email <span className="font-semibold text-ink">{registeredEmail}</span> untuk mengonfirmasi pendaftaran akun kamu, atau langsung masuk jika konfirmasi sudah selesai.
+            </p>
+            <div className="mt-6">
+              <button
+                onClick={() => router.push("/login")}
+                className="focus-ring w-full rounded-pill bg-ink py-3 font-medium text-paper transition-all hover:bg-ink/90 shadow-md"
+              >
+                Mengerti, Lanjut ke Login
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -50,8 +50,8 @@ export function AppShell({
       />
 
       {/* Main content */}
-      <main className="flex-1 overflow-hidden">
-        <div className="mx-auto h-full max-w-7xl px-4 pb-24 pt-4 md:px-8 md:pb-8">
+      <main className="flex-1 overflow-y-auto">
+        <div className="mx-auto h-full max-w-7xl px-4 pb-44 pt-4 md:px-8 md:pb-36">
           {children}
         </div>
       </main>

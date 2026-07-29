@@ -1,8 +1,7 @@
-"use client";
-
-import { useRef, useState, useCallback } from "react";
+import { useRef, useState, useCallback, useEffect } from "react";
 import Link from "next/link";
-import { motion, useMotionValue, useTransform, animate } from "motion/react";
+import { useRouter } from "next/navigation";
+import { motion, animate } from "motion/react";
 import { cn } from "@/lib/utils/cn";
 import { BookStar } from "@/components/illustrations/book-star";
 import { FlameStreak } from "@/components/illustrations/flame-streak";
@@ -24,31 +23,30 @@ interface OrbitDockProps {
 }
 
 export function OrbitDock({ items, activeIndex }: OrbitDockProps) {
+  const router = useRouter();
   const containerRef = useRef<HTMLDivElement>(null);
-  const [isDragging, setIsDragging] = useState(false);
-  const x = useMotionValue(0);
-  const [dragStart, setDragStart] = useState(0);
+  const [optimisticIndex, setOptimisticIndex] = useState(activeIndex);
 
-  const handleDragStart = useCallback(() => {
-    setIsDragging(true);
-    setDragStart(x.get());
-  }, [x]);
+  useEffect(() => {
+    setOptimisticIndex(activeIndex);
+  }, [activeIndex]);
 
-  const handleDragEnd = useCallback(() => {
-    setIsDragging(false);
-    const currentX = x.get();
-    const itemWidth = 80;
-    const targetIndex = Math.round(-currentX / itemWidth);
-    const clampedIndex = Math.max(0, Math.min(items.length - 1, targetIndex));
-    
-    animate(x, -clampedIndex * itemWidth, {
-      type: "spring",
-      stiffness: 300,
-      damping: 30,
-    });
-  }, [x, items.length]);
+  const handleTabClick = (index: number, href: string) => {
+    setOptimisticIndex(index);
+    router.push(href);
+  };
 
-  const activeItem = items[activeIndex];
+  const handlePanEnd = (_: unknown, info: { offset: { x: number } }) => {
+    if (info.offset.x < -40 && optimisticIndex < items.length - 1) {
+      const nextIdx = optimisticIndex + 1;
+      setOptimisticIndex(nextIdx);
+      router.push(items[nextIdx].href);
+    } else if (info.offset.x > 40 && optimisticIndex > 0) {
+      const prevIdx = optimisticIndex - 1;
+      setOptimisticIndex(prevIdx);
+      router.push(items[prevIdx].href);
+    }
+  };
 
   return (
     <>
@@ -57,7 +55,7 @@ export function OrbitDock({ items, activeIndex }: OrbitDockProps) {
         <ul>
           {items.map((item) => (
             <li key={item.href}>
-              <Link href={item.href}>{item.label}</Link>
+              <Link href={item.href} prefetch={true}>{item.label}</Link>
             </li>
           ))}
         </ul>
@@ -66,32 +64,35 @@ export function OrbitDock({ items, activeIndex }: OrbitDockProps) {
       {/* Visual dock */}
       <div
         ref={containerRef}
-        className="fixed bottom-0 left-0 right-0 z-50 flex justify-center pb-4 md:pb-6"
+        className="fixed bottom-0 left-0 right-0 z-50 flex justify-center pb-3 md:pb-5 pointer-events-none"
         role="navigation"
         aria-label="Navigasi utama"
       >
-        <div className="relative">
+        <motion.div
+          className="relative pointer-events-auto touch-pan-x"
+          onPanEnd={handlePanEnd}
+        >
           {/* Orbit arc background */}
-          <div className="absolute -top-8 left-1/2 h-32 w-64 -translate-x-1/2 overflow-hidden">
-            <div className="absolute bottom-0 left-1/2 h-64 w-64 -translate-x-1/2 rounded-full border-2 border-clay/20" />
+          <div className="pointer-events-none absolute -top-6 left-1/2 h-28 w-64 -translate-x-1/2 overflow-hidden opacity-60">
+            <div className="absolute bottom-0 left-1/2 h-56 w-56 -translate-x-1/2 rounded-full border border-clay/30 bg-paper/30 backdrop-blur-xs shadow-xs" />
           </div>
 
           {/* Active indicator */}
           <motion.div
-            className="absolute -top-2 left-1/2 h-1 w-8 -translate-x-1/2 rounded-pill bg-coral"
+            className="absolute -top-1.5 left-1/2 h-1 w-8 -translate-x-1/2 rounded-pill bg-coral shadow-xs"
             layoutId="active-indicator"
-            transition={{ type: "spring", stiffness: 300, damping: 30 }}
+            transition={{ type: "spring", stiffness: 400, damping: 35 }}
           />
 
           {/* Items */}
-          <div className="relative flex items-end gap-1">
+          <div className="relative flex items-end gap-1.5 p-1">
             {items.map((item, index) => {
               const Icon = ICONS[item.icon];
-              const isActive = index === activeIndex;
-              const distance = Math.abs(index - activeIndex);
-              const scale = isActive ? 1 : Math.max(0.7, 1 - distance * 0.15);
-              const opacity = isActive ? 1 : Math.max(0.4, 1 - distance * 0.2);
-              const yOffset = isActive ? -8 : distance * 4;
+              const isActive = index === optimisticIndex;
+              const distance = Math.abs(index - optimisticIndex);
+              const scale = isActive ? 1.05 : Math.max(0.85, 1 - distance * 0.1);
+              const opacity = isActive ? 1 : Math.max(0.6, 1 - distance * 0.15);
+              const yOffset = isActive ? -6 : distance * 2;
 
               return (
                 <motion.div
@@ -104,30 +105,35 @@ export function OrbitDock({ items, activeIndex }: OrbitDockProps) {
                   }}
                   transition={{
                     type: "spring",
-                    stiffness: 300,
-                    damping: 30,
+                    stiffness: 400,
+                    damping: 35,
                   }}
                 >
                   <Link
                     href={item.href}
+                    prefetch={true}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      handleTabClick(index, item.href);
+                    }}
                     className={cn(
-                      "focus-ring group flex flex-col items-center gap-1 rounded-card p-3 transition-colors",
+                      "focus-ring group flex flex-col items-center gap-1 rounded-2xl px-3.5 py-2.5 transition-all shadow-sm active:scale-95",
                       isActive
-                        ? "bg-ink text-paper"
-                        : "bg-paper/60 text-ink/60 hover:bg-paper hover:text-ink"
+                        ? "bg-ink text-paper shadow-md"
+                        : "bg-paper/90 text-ink/70 hover:bg-paper hover:text-ink backdrop-blur-md"
                     )}
                     aria-current={isActive ? "page" : undefined}
                   >
                     <Icon
                       className={cn(
-                        "h-5 w-5 transition-transform",
+                        "h-5 w-5 transition-transform shrink-0",
                         isActive && "scale-110"
                       )}
                     />
                     <span
                       className={cn(
-                        "text-xs font-medium",
-                        isActive ? "text-paper" : "text-ink/60"
+                        "text-[11px] font-semibold tracking-tight",
+                        isActive ? "text-paper" : "text-ink/70"
                       )}
                     >
                       {item.label}
@@ -139,10 +145,10 @@ export function OrbitDock({ items, activeIndex }: OrbitDockProps) {
           </div>
 
           {/* Drag hint */}
-          <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 text-[10px] text-ink/30">
+          <div className="pointer-events-none absolute -bottom-3 left-1/2 -translate-x-1/2 text-[9px] font-medium tracking-wide text-ink/40">
             geser atau klik
           </div>
-        </div>
+        </motion.div>
       </div>
     </>
   );

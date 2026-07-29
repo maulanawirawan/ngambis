@@ -84,23 +84,27 @@ export default function LoginPage() {
             <label htmlFor="password" className="mb-2 block text-sm font-medium text-ink">
               Password
             </label>
-            <div className="relative">
+            <div className="relative flex items-center">
               <input
                 id="password"
                 name="password"
                 type={showPassword ? "text" : "password"}
                 required
                 autoComplete="current-password"
-                className="focus-ring w-full rounded-input border border-clay bg-paper px-4 py-3 pr-11 text-ink placeholder:text-ink/40"
+                className="focus-ring w-full rounded-input border border-clay bg-paper py-3 pl-4 pr-12 text-ink placeholder:text-ink/40"
                 placeholder="••••••••"
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-ink/50 hover:text-ink focus:outline-none"
+                className="absolute right-2 flex h-9 w-9 items-center justify-center rounded-full text-ink/60 transition-colors hover:bg-clay/20 hover:text-ink focus:outline-none"
                 aria-label={showPassword ? "Sembunyikan password" : "Tampilkan password"}
               >
-                {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                {showPassword ? (
+                  <EyeOff className="h-5 w-5 shrink-0" />
+                ) : (
+                  <Eye className="h-5 w-5 shrink-0" />
+                )}
               </button>
             </div>
           </div>
