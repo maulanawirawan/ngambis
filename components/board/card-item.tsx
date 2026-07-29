@@ -18,7 +18,7 @@ const PAPER_VARIANTS = {
   dot: "bg-paper bg-[radial-gradient(#D7C7B9_1px,transparent_1px)] bg-[size:16px_16px]",
 };
 
-export function CardItem({ card, members, onClick }: CardItemProps) {
+export function CardItem({ card, members: _members, onClick }: CardItemProps) {
   const {
     attributes,
     listeners,

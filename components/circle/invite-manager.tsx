@@ -4,7 +4,7 @@ import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils/cn";
-import type { Circle, CircleInvite, CircleInvitationRequest } from "@/types";
+import type { Circle, CircleInvite, CircleInvitationRequest, Profile } from "@/types";
 
 interface InviteManagerProps {
   circle: Circle;
@@ -15,14 +15,14 @@ interface InviteManagerProps {
 export function InviteManager({
   circle,
   invites,
-  pendingInvitations,
+  pendingInvitations: _pendingInvitations,
 }: InviteManagerProps) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState<string | null>(null);
   const [usernameSearch, setUsernameSearch] = useState("");
-  const [searchResults, setSearchResults] = useState<any[]>([]);
+  const [searchResults, setSearchResults] = useState<Profile[]>([]);
   const [searching, setSearching] = useState(false);
 
   async function handleCreateInvite() {

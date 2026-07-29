@@ -122,7 +122,7 @@ export function CircleSettings({ circle, isOwner, memberCount }: CircleSettingsP
             <select
               value={circle.default_planning_visibility}
               onChange={(e) =>
-                handleUpdate({ default_planning_visibility: e.target.value as any })
+                handleUpdate({ default_planning_visibility: e.target.value as "private" | "circle" })
               }
               className="focus-ring w-full rounded-input border border-clay bg-paper px-4 py-2 text-ink"
             >
@@ -138,7 +138,7 @@ export function CircleSettings({ circle, isOwner, memberCount }: CircleSettingsP
             <select
               value={circle.default_schedule_visibility}
               onChange={(e) =>
-                handleUpdate({ default_schedule_visibility: e.target.value as any })
+                handleUpdate({ default_schedule_visibility: e.target.value as "private" | "circle" })
               }
               className="focus-ring w-full rounded-input border border-clay bg-paper px-4 py-2 text-ink"
             >

@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils/cn";
 import { CreateCircleForm } from "@/components/circle/create-circle-form";
@@ -55,7 +54,7 @@ export function CircleView({
     { id: "settings", label: "Pengaturan", adminOnly: true },
   ];
 
-  async function handleSwitchCircle(circleId: string) {
+  async function handleSwitchCircle(_circleId: string) {
     // In a real app, you'd store the active circle in user preferences
     // For now, just refresh to show the selected circle's data
     router.refresh();
@@ -199,7 +198,7 @@ export function CircleView({
                       className="flex items-center justify-between rounded-input bg-clay/20 p-3"
                     >
                       <span className="text-ink">
-                        Undangan untuk {(inv as any).invited_user?.display_name || "user"}
+                        Undangan untuk {(inv as CircleInvitationRequest & { invited_user?: { display_name?: string } }).invited_user?.display_name || "user"}
                       </span>
                       <span className="text-xs text-ink/50">
                         {new Date(inv.created_at).toLocaleDateString("id-ID")}

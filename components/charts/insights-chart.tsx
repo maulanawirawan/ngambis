@@ -29,7 +29,7 @@ interface InsightsChartProps {
 export function InsightsChart({
   reports,
   focusSessions,
-  completedCards,
+  completedCards: _completedCards,
 }: InsightsChartProps) {
   const chartRef = useRef<HTMLDivElement>(null);
   const chartInstance = useRef<echarts.ECharts | null>(null);
