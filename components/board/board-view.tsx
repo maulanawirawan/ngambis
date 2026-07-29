@@ -183,51 +183,75 @@ export function BoardView({ user, boards: initialBoards, members, circleIds }: B
     return card?.stage_id || null;
   }
 
+  const [creatingBoard, setCreatingBoard] = useState(false);
+
   async function handleCreateBoard() {
-    if (circleIds.length === 0) return;
+    setCreatingBoard(true);
+    setError(null);
 
-    const supabase = createClient();
-    const { data, error } = await supabase
-      .from("planning_boards")
-      .insert({
-        circle_id: circleIds[0],
+    try {
+      const boardId = crypto.randomUUID();
+      const supabase = createClient();
+
+      const { error: insertError } = await supabase.from("planning_boards").insert({
+        id: boardId,
+        circle_id: circleIds[0] || null,
         owner_id: user.id,
-        name: "Board Baru",
-        visibility: "private",
-      })
-      .select()
-      .single();
+        name: "Board Utama",
+        visibility: circleIds.length > 0 ? "circle" : "private",
+      });
 
-    if (!error && data) {
+      if (insertError) {
+        setError(insertError.message || "Gagal membuat board. Coba lagi.");
+        return;
+      }
+
       // Create default stages
       const defaultStages = [
-        { name: "Kepikiran", position: 0 },
-        { name: "Siap Digarap", position: 1 },
-        { name: "Lagi Jalan", position: 2 },
-        { name: "Tinggal Poles", position: 3 },
-        { name: "Beres", position: 4 },
+        { id: crypto.randomUUID(), name: "Kepikiran", position: 0 },
+        { id: crypto.randomUUID(), name: "Siap Digarap", position: 1 },
+        { id: crypto.randomUUID(), name: "Lagi Jalan", position: 2 },
+        { id: crypto.randomUUID(), name: "Tinggal Poles", position: 3 },
+        { id: crypto.randomUUID(), name: "Beres", position: 4 },
       ];
 
-      await supabase.from("board_stages").insert(
+      const { error: stageError } = await supabase.from("board_stages").insert(
         defaultStages.map((s) => ({
-          board_id: data.id,
+          board_id: boardId,
           ...s,
         }))
       );
 
+      if (stageError) {
+        setError(stageError.message || "Gagal membuat stage.");
+        return;
+      }
+
       router.refresh();
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Terjadi kesalahan.");
+    } finally {
+      setCreatingBoard(false);
     }
   }
 
   if (!activeBoard) {
     return (
-      <div className="flex h-full flex-col items-center justify-center gap-4">
-        <p className="text-ink/60">Belum ada board. Buat yang pertama yuk!</p>
+      <div className="flex h-full flex-col items-center justify-center gap-4 p-8 text-center">
+        {error && (
+          <div className="mb-2 max-w-sm rounded-input bg-coral/10 px-4 py-3 text-sm text-coral">
+            {error}
+          </div>
+        )}
+        <p className="font-display text-lg font-semibold text-ink">
+          Belum ada board. Buat yang pertama yuk!
+        </p>
         <button
           onClick={handleCreateBoard}
-          className="focus-ring rounded-pill bg-ink px-6 py-3 font-medium text-paper transition-colors hover:bg-ink/90"
+          disabled={creatingBoard}
+          className="focus-ring rounded-pill bg-ink px-8 py-3.5 font-medium text-paper transition-all hover:bg-ink/90 disabled:opacity-50 shadow-md"
         >
-          Buat Board
+          {creatingBoard ? "Membuat Board..." : "Buat Board Utama"}
         </button>
       </div>
     );
