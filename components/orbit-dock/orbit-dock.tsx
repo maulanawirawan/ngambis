@@ -3,18 +3,14 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { motion, animate } from "motion/react";
 import { cn } from "@/lib/utils/cn";
-import { BookStar } from "@/components/illustrations/book-star";
-import { FlameStreak } from "@/components/illustrations/flame-streak";
-import { MoonFocus } from "@/components/illustrations/moon-focus";
-import { ReportReceipt } from "@/components/illustrations/report-receipt";
-import { OrbitPeople } from "@/components/illustrations/orbit-people";
+import { Sun, Kanban, CalendarClock, Archive, Users } from "lucide-react";
 
 const ICONS = {
-  book: BookStar,
-  flame: FlameStreak,
-  moon: MoonFocus,
-  receipt: ReportReceipt,
-  orbit: OrbitPeople,
+  book: Sun,
+  flame: Kanban,
+  moon: CalendarClock,
+  receipt: Archive,
+  orbit: Users,
 } as const;
 
 interface OrbitDockProps {

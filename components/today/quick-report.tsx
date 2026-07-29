@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
-import { BookStar } from "@/components/illustrations/book-star";
+import { CheckCircle2 } from "lucide-react";
 
 interface QuickReportProps {
   circleId: string | undefined;
@@ -116,11 +116,11 @@ export function QuickReport({ circleId }: QuickReportProps) {
       {showSuccessModal && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-ink/60 p-4 backdrop-blur-md animate-in fade-in duration-200">
           <div className="w-full max-w-sm rounded-2xl border border-clay/40 bg-paper p-6 shadow-2xl text-center">
-            <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-full bg-moss/20 text-moss">
-              <BookStar className="h-8 w-8 text-moss" />
+            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-moss/15 text-moss shadow-inner">
+              <CheckCircle2 className="h-10 w-10 text-moss stroke-[2.5]" />
             </div>
             <h3 className="font-display text-2xl font-bold text-ink">
-              Report Tersimpan! 🎯
+              Report Tersimpan!
             </h3>
             <p className="mt-2 text-sm leading-relaxed text-ink/70">
               Mantap! Progres kamu hari ini sudah berhasil tercatat secara otomatis.

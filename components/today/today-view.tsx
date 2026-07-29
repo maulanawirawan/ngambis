@@ -124,33 +124,44 @@ export function TodayView({
         )}
 
         {/* Circle check-ins */}
-        {checkIns.length > 0 && (
-          <motion.section
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-            className="rounded-card bg-paper p-6"
-          >
-            <h2 className="font-display text-xl font-semibold text-ink">
-              Circle hari ini
-            </h2>
-            <div className="mt-4 flex flex-wrap gap-3">
-              {checkIns.map((checkIn) => (
+        <motion.section
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+          className="rounded-card bg-paper p-6"
+        >
+          <h2 className="font-display text-xl font-semibold text-ink">
+            Circle hari ini
+          </h2>
+          <div className="mt-4 flex flex-wrap gap-3">
+            {/* User's own check-in pill */}
+            <div className="flex items-center gap-2 rounded-pill bg-ink text-paper px-3 py-1.5 shadow-sm">
+              <span className="text-sm font-medium">
+                {displayName}
+              </span>
+              <span className="text-xs font-semibold text-coral">
+                {getCheckInLabel(checkInMood || "siap_gas")}
+              </span>
+            </div>
+
+            {/* Other members' check-in pills */}
+            {checkIns
+              .filter((c) => c.owner_id !== user.id)
+              .map((checkIn) => (
                 <div
                   key={checkIn.id}
                   className="flex items-center gap-2 rounded-pill bg-clay/20 px-3 py-1.5"
                 >
                   <span className="text-sm font-medium text-ink">
-                    {checkIn.owner?.display_name}
+                    {checkIn.owner?.display_name || "Member"}
                   </span>
                   <span className="text-xs text-ink/60">
                     {getCheckInLabel(checkIn.state)}
                   </span>
                 </div>
               ))}
-            </div>
-          </motion.section>
-        )}
+          </div>
+        </motion.section>
       </div>
 
       {/* Side panel - 38.2% */}

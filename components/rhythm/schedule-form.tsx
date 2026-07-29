@@ -29,70 +29,108 @@ export function ScheduleForm({
   editingItem,
   onClose,
 }: ScheduleFormProps) {
-  const router = useRouter();
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [visibility, setVisibility] = useState<Visibility>(
-    editingItem?.visibility || "private"
-  );
-  const [daypart, setDaypart] = useState<Daypart>(
-    editingItem?.daypart || "pagi"
-  );
-  const [recurrence, setRecurrence] = useState(
-    editingItem?.recurrence_rule || "none"
-  );
+  // Realtime default time computation
+  const getInitialTime = () => {
+    if (editingItem?.start_time) {
+      return { start: editingItem.start_time.slice(0, 5), end: editingItem.end_time?.slice(0, 5) || "" };
+    }
+    const now = new Date();
+    const h = String(now.getHours()).padStart(2, "0");
+    const m = String(now.getMinutes()).padStart(2, "0");
+    const nextH = String((now.getHours() + 1) % 24).padStart(2, "0");
+    return { start: `${h}:${m}`, end: `${nextH}:${m}` };
+  };
+
+  const initialTimes = getInitialTime();
+  const [startTime, setStartTime] = useState(initialTimes.start);
+  const [endTime, setEndTime] = useState(initialTimes.end);
+
+  const getDaypartFromTime = (timeStr: string): Daypart => {
+    const hour = parseInt(timeStr.split(":")[0], 10);
+    if (isNaN(hour)) return "pagi";
+    if (hour >= 5 && hour < 11) return "pagi";
+    if (hour >= 11 && hour < 15) return "siang";
+    if (hour >= 15 && hour < 19) return "sore";
+    return "malam";
+  };
+
+  // Sync daypart when startTime changes
+  const handleStartTimeChange = (newTime: string) => {
+    setStartTime(newTime);
+    if (newTime) {
+      setDaypart(getDaypartFromTime(newTime));
+    }
+  };
+
+  // Sync startTime & endTime when daypart pill is clicked
+  const handleDaypartClick = (dp: Daypart) => {
+    setDaypart(dp);
+    const daypartDefaults: Record<Daypart, { start: string; end: string }> = {
+      pagi: { start: "08:00", end: "09:00" },
+      siang: { start: "13:00", end: "14:00" },
+      sore: { start: "16:00", end: "17:00" },
+      malam: { start: "20:00", end: "21:00" },
+    };
+    const def = daypartDefaults[dp];
+    if (def) {
+      setStartTime(def.start);
+      setEndTime(def.end);
+    }
+  };
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    if (!circleId) return;
-
     setLoading(true);
     setError(null);
 
-    const formData = new FormData(e.currentTarget);
-    const supabase = createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+    try {
+      const formData = new FormData(e.currentTarget);
+      const supabase = createClient();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
 
-    if (!user) {
-      setError("Sesi habis. Silakan masuk lagi.");
+      if (!user) {
+        setError("Sesi habis. Silakan masuk lagi.");
+        return;
+      }
+
+      const data = {
+        circle_id: circleId || null,
+        owner_id: user.id,
+        title: (formData.get("title") as string).trim(),
+        description: (formData.get("description") as string)?.trim() || null,
+        schedule_date: date,
+        start_time: startTime || null,
+        end_time: endTime || null,
+        daypart,
+        recurrence_rule: recurrence === "none" ? null : recurrence,
+        planning_card_id: (formData.get("card_id") as string) || null,
+        visibility: circleId ? visibility : "private",
+      };
+
+      let result;
+      if (editingItem) {
+        result = await supabase
+          .from("schedule_items")
+          .update(data)
+          .eq("id", editingItem.id);
+      } else {
+        result = await supabase.from("schedule_items").insert(data);
+      }
+
+      if (result.error) {
+        setError(result.error.message || "Belum kesimpan. Coba sekali lagi.");
+        return;
+      }
+
+      router.refresh();
+      onClose();
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Gagal menyimpan jadwal.");
+    } finally {
       setLoading(false);
-      return;
     }
-
-    const data = {
-      circle_id: circleId,
-      owner_id: user.id,
-      title: formData.get("title") as string,
-      description: formData.get("description") as string || null,
-      schedule_date: date,
-      start_time: formData.get("start_time") as string || null,
-      end_time: formData.get("end_time") as string || null,
-      daypart,
-      recurrence_rule: recurrence === "none" ? null : recurrence,
-      planning_card_id: formData.get("card_id") as string || null,
-      visibility,
-    };
-
-    let result;
-    if (editingItem) {
-      result = await supabase
-        .from("schedule_items")
-        .update(data)
-        .eq("id", editingItem.id);
-    } else {
-      result = await supabase.from("schedule_items").insert(data);
-    }
-
-    if (result.error) {
-      setError("Belum kesimpan. Coba sekali lagi.");
-      setLoading(false);
-      return;
-    }
-
-    router.refresh();
-    onClose();
   }
 
   return (
@@ -158,7 +196,7 @@ export function ScheduleForm({
                 <button
                   key={dp.value}
                   type="button"
-                  onClick={() => setDaypart(dp.value)}
+                  onClick={() => handleDaypartClick(dp.value)}
                   className={cn(
                     "focus-ring rounded-input border p-2 text-center text-sm transition-all",
                     daypart === dp.value
@@ -181,7 +219,8 @@ export function ScheduleForm({
                 id="start_time"
                 name="start_time"
                 type="time"
-                defaultValue={editingItem?.start_time || ""}
+                value={startTime}
+                onChange={(e) => handleStartTimeChange(e.target.value)}
                 className="focus-ring w-full rounded-input border border-clay bg-paper px-4 py-3 text-ink"
               />
             </div>
@@ -193,7 +232,8 @@ export function ScheduleForm({
                 id="end_time"
                 name="end_time"
                 type="time"
-                defaultValue={editingItem?.end_time || ""}
+                value={endTime}
+                onChange={(e) => setEndTime(e.target.value)}
                 className="focus-ring w-full rounded-input border border-clay bg-paper px-4 py-3 text-ink"
               />
             </div>
