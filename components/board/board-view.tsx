@@ -190,15 +190,45 @@ export function BoardView({ user, boards: initialBoards, members, circleIds }: B
     setError(null);
 
     try {
-      const boardId = crypto.randomUUID();
       const supabase = createClient();
+      let targetCircleId = circleIds[0];
+
+      // If user doesn't have a circle yet, create a default personal circle first
+      if (!targetCircleId) {
+        targetCircleId = crypto.randomUUID();
+        const displayName = user.user_metadata?.display_name || user.email?.split("@")[0] || "Saya";
+        const slugBase = displayName.toLowerCase().replace(/[^a-z0-9]+/g, "-");
+
+        const { error: circleErr } = await supabase.from("circles").insert({
+          id: targetCircleId,
+          name: `Circle ${displayName}`,
+          slug: `${slugBase}-${Date.now().toString(36)}`,
+          accent: "#F16F5C",
+          created_by: user.id,
+        });
+
+        if (circleErr) {
+          setError(circleErr.message || "Gagal membuat circle dasar.");
+          return;
+        }
+
+        // Add creator as owner
+        await supabase.from("circle_members").insert({
+          circle_id: targetCircleId,
+          user_id: user.id,
+          role: "owner",
+          status: "active",
+        });
+      }
+
+      const boardId = crypto.randomUUID();
 
       const { error: insertError } = await supabase.from("planning_boards").insert({
         id: boardId,
-        circle_id: circleIds[0] || null,
+        circle_id: targetCircleId,
         owner_id: user.id,
         name: "Board Utama",
-        visibility: circleIds.length > 0 ? "circle" : "private",
+        visibility: "circle",
       });
 
       if (insertError) {
