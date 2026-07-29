@@ -15,9 +15,10 @@ const CHECK_IN_OPTIONS: { value: CheckInState; label: string; emoji: string }[] 
 
 interface CheckInSelectorProps {
   circleIds: string[];
+  onStateChange?: (state: CheckInState) => void;
 }
 
-export function CheckInSelector({ circleIds }: CheckInSelectorProps) {
+export function CheckInSelector({ circleIds, onStateChange }: CheckInSelectorProps) {
   const router = useRouter();
   const [selected, setSelected] = useState<CheckInState | null>(null);
   const [loading, setLoading] = useState(false);
@@ -30,7 +31,7 @@ export function CheckInSelector({ circleIds }: CheckInSelectorProps) {
         data: { user },
       } = await supabase.auth.getUser();
 
-      if (!user || circleIds.length === 0) return;
+      if (!user) return;
 
       const today = new Date().toISOString().split("T")[0];
       const { data } = await supabase
@@ -41,40 +42,45 @@ export function CheckInSelector({ circleIds }: CheckInSelectorProps) {
         .single();
 
       if (data) {
-        setSelected(data.state as CheckInState);
+        const state = data.state as CheckInState;
+        setSelected(state);
         setSaved(true);
+        onStateChange?.(state);
       }
     }
 
     fetchTodayCheckIn();
-  }, [circleIds]);
+  }, [circleIds, onStateChange]);
 
   async function handleSelect(state: CheckInState) {
-    if (circleIds.length === 0) return;
-
     setLoading(true);
+    setSelected(state);
+    onStateChange?.(state);
+
     const supabase = createClient();
     const {
       data: { user },
     } = await supabase.auth.getUser();
 
-    if (!user) return;
+    if (!user) {
+      setLoading(false);
+      return;
+    }
 
     const today = new Date().toISOString().split("T")[0];
 
     const { error } = await supabase.from("check_ins").upsert(
       {
-        circle_id: circleIds[0],
+        circle_id: circleIds[0] || null,
         owner_id: user.id,
         check_in_date: today,
         state,
-        visibility: "circle",
+        visibility: circleIds.length > 0 ? "circle" : "private",
       },
-      { onConflict: "circle_id,owner_id,check_in_date" }
+      { onConflict: "owner_id,check_in_date" }
     );
 
     if (!error) {
-      setSelected(state);
       setSaved(true);
       router.refresh();
     }

@@ -20,49 +20,51 @@ export function ReportForm({ circleId, onClose }: ReportFormProps) {
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    if (!circleId) return;
-
     setLoading(true);
     setError(null);
 
-    const formData = new FormData(e.currentTarget);
-    const supabase = createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+    try {
+      const formData = new FormData(e.currentTarget);
+      const supabase = createClient();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
 
-    if (!user) {
-      setError("Sesi habis. Silakan masuk lagi.");
+      if (!user) {
+        setError("Sesi habis. Silakan masuk lagi.");
+        return;
+      }
+
+      const today = new Date().toISOString().split("T")[0];
+
+      const { error: insertError } = await supabase.from("study_reports").insert({
+        circle_id: circleId || null,
+        owner_id: user.id,
+        report_date: today,
+        topic: formData.get("topic") as string,
+        progress: formData.get("progress") as string,
+        learning: (formData.get("learning") as string) || null,
+        blocker: (formData.get("blocker") as string) || null,
+        next_step: (formData.get("next_step") as string) || null,
+        duration_minutes: formData.get("duration")
+          ? parseInt(formData.get("duration") as string)
+          : null,
+        mood: (formData.get("mood") as string) || null,
+        visibility: circleId ? visibility : "private",
+      });
+
+      if (insertError) {
+        setError(insertError.message || "Belum kesimpan. Coba sekali lagi.");
+        return;
+      }
+
+      router.refresh();
+      onClose();
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Gagal menyimpan report.");
+    } finally {
       setLoading(false);
-      return;
     }
-
-    const today = new Date().toISOString().split("T")[0];
-
-    const { error: insertError } = await supabase.from("study_reports").insert({
-      circle_id: circleId,
-      owner_id: user.id,
-      report_date: today,
-      topic: formData.get("topic") as string,
-      progress: formData.get("progress") as string,
-      learning: formData.get("learning") as string || null,
-      blocker: formData.get("blocker") as string || null,
-      next_step: formData.get("next_step") as string || null,
-      duration_minutes: formData.get("duration")
-        ? parseInt(formData.get("duration") as string)
-        : null,
-      mood: formData.get("mood") as string || null,
-      visibility,
-    });
-
-    if (insertError) {
-      setError("Belum kesimpan. Coba sekali lagi.");
-      setLoading(false);
-      return;
-    }
-
-    router.refresh();
-    onClose();
   }
 
   return (

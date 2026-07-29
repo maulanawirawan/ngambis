@@ -29,6 +29,8 @@ const ACCENT_COLORS: Record<Accent, string> = {
   plum: "bg-plum",
 };
 
+import { JoinCircleModal } from "@/components/circle/join-circle-modal";
+
 export function CircleView({
   user,
   circles,
@@ -40,6 +42,7 @@ export function CircleView({
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<Tab>("overview");
   const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const [isJoinOpen, setIsJoinOpen] = useState(false);
 
   const userRole = activeCircle
     ? circles.find((c) => c.id === activeCircle.id)?.user_role
@@ -55,8 +58,6 @@ export function CircleView({
   ];
 
   async function handleSwitchCircle(_circleId: string) {
-    // In a real app, you'd store the active circle in user preferences
-    // For now, just refresh to show the selected circle's data
     router.refresh();
   }
 
@@ -71,15 +72,26 @@ export function CircleView({
             Circle adalah tempat kamu dan teman-temanmu berbagi progres.
           </p>
         </div>
-        <button
-          onClick={() => setIsCreateOpen(true)}
-          className="focus-ring rounded-pill bg-ink px-6 py-3 font-medium text-paper transition-colors hover:bg-ink/90"
-        >
-          Buat Circle Pertama
-        </button>
+        <div className="flex flex-wrap gap-3">
+          <button
+            onClick={() => setIsCreateOpen(true)}
+            className="focus-ring rounded-pill bg-ink px-6 py-3 font-medium text-paper transition-colors hover:bg-ink/90"
+          >
+            Buat Circle Pertama
+          </button>
+          <button
+            onClick={() => setIsJoinOpen(true)}
+            className="focus-ring rounded-pill border border-clay bg-paper px-6 py-3 font-medium text-ink transition-colors hover:bg-clay/20"
+          >
+            🔗 Gabung via Link Invite
+          </button>
+        </div>
 
         {isCreateOpen && (
           <CreateCircleForm onClose={() => setIsCreateOpen(false)} />
+        )}
+        {isJoinOpen && (
+          <JoinCircleModal onClose={() => setIsJoinOpen(false)} />
         )}
       </div>
     );
@@ -110,7 +122,7 @@ export function CircleView({
           </div>
         </div>
 
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           {circles.length > 1 && (
             <select
               value={activeCircle?.id}
@@ -125,8 +137,14 @@ export function CircleView({
             </select>
           )}
           <button
+            onClick={() => setIsJoinOpen(true)}
+            className="focus-ring rounded-pill border border-clay bg-paper px-4 py-2 text-sm font-medium text-ink transition-colors hover:bg-clay/20"
+          >
+            🔗 Gabung via Link
+          </button>
+          <button
             onClick={() => setIsCreateOpen(true)}
-            className="focus-ring rounded-pill border border-clay px-4 py-2 text-sm text-ink transition-colors hover:bg-clay/20"
+            className="focus-ring rounded-pill bg-ink px-4 py-2 text-sm font-medium text-paper transition-colors hover:bg-ink/90 shadow-sm"
           >
             + Circle baru
           </button>
@@ -259,9 +277,12 @@ export function CircleView({
         )}
       </div>
 
-      {/* Create circle modal */}
+      {/* Modals */}
       {isCreateOpen && (
         <CreateCircleForm onClose={() => setIsCreateOpen(false)} />
+      )}
+      {isJoinOpen && (
+        <JoinCircleModal onClose={() => setIsJoinOpen(false)} />
       )}
     </div>
   );

@@ -14,9 +14,10 @@ export function CalendarHeatmap({ reports, focusSessions }: CalendarHeatmapProps
   const year = now.getFullYear();
   const month = now.getMonth();
 
-  // Get days in month
+  // Get days in current month, previous month
   const daysInMonth = new Date(year, month + 1, 0).getDate();
-  const firstDayOfMonth = new Date(year, month, 1).getDay();
+  const firstDayOfWeek = new Date(year, month, 1).getDay(); // 0 = Sun
+  const daysInPrevMonth = new Date(year, month, 0).getDate();
 
   // Create activity map
   const activityMap = useMemo(() => {
@@ -35,60 +36,95 @@ export function CalendarHeatmap({ reports, focusSessions }: CalendarHeatmapProps
     return map;
   }, [reports, focusSessions]);
 
-  // Generate calendar cells
-  const cells = [];
-  for (let i = 0; i < firstDayOfMonth; i++) {
-    cells.push(null);
-  }
-  for (let day = 1; day <= daysInMonth; day++) {
-    const date = new Date(year, month, day).toISOString().split("T")[0];
-    cells.push({ day, date, count: activityMap.get(date) || 0 });
+  // Generate complete calendar grid cells (42 cells = 6 rows x 7 days)
+  const cells: Array<{
+    day: number;
+    dateStr: string;
+    count: number;
+    isCurrentMonth: boolean;
+  }> = [];
+
+  // Previous month trailing days
+  for (let i = firstDayOfWeek - 1; i >= 0; i--) {
+    const prevDay = daysInPrevMonth - i;
+    const prevDate = new Date(year, month - 1, prevDay);
+    const dateStr = prevDate.toISOString().split("T")[0];
+    cells.push({
+      day: prevDay,
+      dateStr,
+      count: activityMap.get(dateStr) || 0,
+      isCurrentMonth: false,
+    });
   }
 
-  const monthName = now.toLocaleDateString("id-ID", { month: "long" });
+  // Current month days
+  for (let day = 1; day <= daysInMonth; day++) {
+    const dateStr = new Date(year, month, day).toISOString().split("T")[0];
+    cells.push({
+      day,
+      dateStr,
+      count: activityMap.get(dateStr) || 0,
+      isCurrentMonth: true,
+    });
+  }
+
+  // Next month leading days
+  const remainingCells = (7 - (cells.length % 7)) % 7;
+  for (let day = 1; day <= remainingCells; day++) {
+    const nextDate = new Date(year, month + 1, day);
+    const dateStr = nextDate.toISOString().split("T")[0];
+    cells.push({
+      day,
+      dateStr,
+      count: activityMap.get(dateStr) || 0,
+      isCurrentMonth: false,
+    });
+  }
+
+  const monthName = now.toLocaleDateString("id-ID", { month: "long", year: "numeric" });
 
   return (
-    <div className="rounded-card bg-paper p-4">
-      <h3 className="mb-4 font-display text-lg font-semibold text-ink">
+    <div className="rounded-2xl border border-clay/30 bg-paper p-6 shadow-sm">
+      <h3 className="mb-4 font-display text-xl font-bold text-ink">
         Aktivitas {monthName}
       </h3>
 
-      <div className="grid grid-cols-7 gap-1">
+      <div className="grid grid-cols-7 gap-1.5">
         {["Min", "Sen", "Sel", "Rab", "Kam", "Jum", "Sab"].map((day) => (
-          <div key={day} className="p-1 text-center text-xs text-ink/40">
+          <div key={day} className="p-1 text-center font-display text-xs font-semibold text-ink/50">
             {day}
           </div>
         ))}
 
         {cells.map((cell, i) => (
           <div
-            key={i}
+            key={`${cell.dateStr}-${i}`}
             className={cn(
-              "aspect-square rounded-sm p-1 text-center text-xs",
-              cell
-                ? cell.count > 0
+              "aspect-square flex flex-col items-center justify-center rounded-xl p-1 text-center font-mono text-xs transition-all shadow-xs",
+              !cell.isCurrentMonth
+                ? "bg-clay/10 text-ink/30 border border-dashed border-clay/20"
+                : cell.count > 0
                   ? cell.count > 2
-                    ? "bg-coral text-paper"
+                    ? "bg-coral text-paper font-bold shadow-sm"
                     : cell.count > 1
-                      ? "bg-coral/60 text-paper"
-                      : "bg-coral/30 text-ink"
-                  : "bg-clay/20 text-ink/60"
-                : ""
+                      ? "bg-coral/70 text-paper font-bold"
+                      : "bg-coral/30 text-ink font-semibold"
+                  : "bg-clay/20 text-ink/70 hover:bg-clay/30"
             )}
-            title={cell ? `${cell.day} ${monthName}: ${cell.count} aktivitas` : undefined}
+            title={`${cell.day} ${cell.isCurrentMonth ? monthName : ""}: ${cell.count} aktivitas`}
           >
-            {cell?.day}
+            <span>{cell.day}</span>
           </div>
         ))}
       </div>
 
-      <div className="mt-4 flex items-center justify-end gap-2 text-xs text-ink/50">
+      <div className="mt-5 flex items-center justify-end gap-2 text-xs font-medium text-ink/60">
         <span>Sedikit</span>
-        <div className="flex gap-1">
-          <div className="h-3 w-3 rounded-sm bg-clay/20" />
-          <div className="h-3 w-3 rounded-sm bg-coral/30" />
-          <div className="h-3 w-3 rounded-sm bg-coral/60" />
-          <div className="h-3 w-3 rounded-sm bg-coral" />
+        <div className="flex gap-1.5">
+          <div className="h-3.5 w-3.5 rounded-md bg-clay/20" />
+          <div className="h-3.5 w-3.5 rounded-md bg-coral/30" />
+          <div className="h-3.5 w-3.5 rounded-md bg-coral/70" />
+          <div className="h-3.5 w-3.5 rounded-md bg-coral" />
         </div>
         <span>Banyak</span>
       </div>

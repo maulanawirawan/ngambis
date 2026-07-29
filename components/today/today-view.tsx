@@ -39,6 +39,7 @@ export function TodayView({
   circleIds,
 }: TodayViewProps) {
   const [isReportFormOpen, setIsReportFormOpen] = useState(false);
+  const [checkInMood, setCheckInMood] = useState<import("@/types").CheckInState | null>(null);
   const greeting = getGreeting();
   const displayName = user.user_metadata?.display_name || "kamu";
 
@@ -68,12 +69,15 @@ export function TodayView({
                   : "Belum ada yang ambis hari ini."}
               </p>
             </div>
-            <MascotBisi mood={report ? "excited" : "happy"} className="text-coral" />
+            <MascotBisi mood={checkInMood || (report ? "excited" : "happy")} />
           </div>
 
           {/* Check-in selector */}
           <div className="mt-8">
-            <CheckInSelector circleIds={circleIds} />
+            <CheckInSelector
+              circleIds={circleIds}
+              onStateChange={setCheckInMood}
+            />
           </div>
         </motion.section>
 
