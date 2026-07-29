@@ -29,6 +29,19 @@ export function ScheduleForm({
   editingItem,
   onClose,
 }: ScheduleFormProps) {
+  const router = useRouter();
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [visibility, setVisibility] = useState<Visibility>(
+    editingItem?.visibility || "private"
+  );
+  const [daypart, setDaypart] = useState<Daypart>(
+    editingItem?.daypart || "pagi"
+  );
+  const [recurrence, setRecurrence] = useState(
+    editingItem?.recurrence_rule || "none"
+  );
+
   // Realtime default time computation
   const getInitialTime = () => {
     if (editingItem?.start_time) {
