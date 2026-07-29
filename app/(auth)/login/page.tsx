@@ -7,10 +7,13 @@ import { createClient } from "@/lib/supabase/client";
 import { signInSchema, type SignInInput } from "@/lib/validation/auth";
 import { BookStar } from "@/components/illustrations/book-star";
 
+import { Eye, EyeOff } from "lucide-react";
+
 export default function LoginPage() {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -81,15 +84,25 @@ export default function LoginPage() {
             <label htmlFor="password" className="mb-2 block text-sm font-medium text-ink">
               Password
             </label>
-            <input
-              id="password"
-              name="password"
-              type="password"
-              required
-              autoComplete="current-password"
-              className="focus-ring w-full rounded-input border border-clay bg-paper px-4 py-3 text-ink placeholder:text-ink/40"
-              placeholder="••••••••"
-            />
+            <div className="relative">
+              <input
+                id="password"
+                name="password"
+                type={showPassword ? "text" : "password"}
+                required
+                autoComplete="current-password"
+                className="focus-ring w-full rounded-input border border-clay bg-paper px-4 py-3 pr-11 text-ink placeholder:text-ink/40"
+                placeholder="••••••••"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-ink/50 hover:text-ink focus:outline-none"
+                aria-label={showPassword ? "Sembunyikan password" : "Tampilkan password"}
+              >
+                {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+              </button>
+            </div>
           </div>
 
           <button
