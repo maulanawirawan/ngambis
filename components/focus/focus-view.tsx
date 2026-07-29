@@ -166,14 +166,14 @@ export function FocusView({
           </div>
 
           {/* Linked item */}
-          {(activeSession as any).planning_card && (
+          {(activeSession as FocusSession & { planning_card?: { title?: string } }).planning_card && (
             <p className="mb-4 text-ink/60">
-              📋 {(activeSession as any).planning_card?.title}
+              📋 {(activeSession as FocusSession & { planning_card?: { title?: string } }).planning_card?.title}
             </p>
           )}
-          {(activeSession as any).schedule_item && (
+          {(activeSession as FocusSession & { schedule_item?: { title?: string } }).schedule_item && (
             <p className="mb-4 text-ink/60">
-              📅 {(activeSession as any).schedule_item?.title}
+              📅 {(activeSession as FocusSession & { schedule_item?: { title?: string } }).schedule_item?.title}
             </p>
           )}
 

@@ -205,7 +205,7 @@ export function ArchiveView({
                     <div>
                       <p className="font-medium text-ink">{card.title}</p>
                       <p className="text-sm text-ink/50">
-                        {(card as any).stage?.name} · Selesai{" "}
+                        {(card as PlanningCard & { stage?: { name?: string } }).stage?.name} · Selesai{" "}
                         {new Date(card.completed_at!).toLocaleDateString("id-ID", {
                           day: "numeric",
                           month: "short",
