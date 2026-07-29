@@ -1,0 +1,91 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --color-canvas: #F5EFE5;
+    --color-ink: #211D1E;
+    --color-coral: #F16F5C;
+    --color-clay: #D7C7B9;
+    --color-paper: #FFFDF8;
+    --color-moss: #5A7A5A;
+    --color-cobalt: #3B5BA5;
+    --color-butter: #E8C468;
+    --color-plum: #7A4B6E;
+    --color-accent: var(--color-coral);
+
+    --space-5: 5px;
+    --space-8: 8px;
+    --space-13: 13px;
+    --space-21: 21px;
+    --space-34: 34px;
+    --space-55: 55px;
+
+    --radius-input: 13px;
+    --radius-card: 21px;
+    --radius-hero: 34px;
+    --radius-pill: 999px;
+
+    --duration-fast: 150ms;
+    --duration-normal: 200ms;
+    --duration-slow: 250ms;
+  }
+
+  html {
+    @apply h-full scroll-smooth;
+  }
+
+  body {
+    @apply min-h-dvh bg-canvas text-ink font-sans antialiased;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}
+
+@layer components {
+  .focus-ring {
+    @apply focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-coral;
+  }
+
+  .scrollbar-custom {
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-clay) transparent;
+  }
+
+  .scrollbar-custom::-webkit-scrollbar {
+    @apply w-1.5 h-1.5;
+  }
+
+  .scrollbar-custom::-webkit-scrollbar-track {
+    @apply bg-transparent;
+  }
+
+  .scrollbar-custom::-webkit-scrollbar-thumb {
+    @apply bg-clay/40 rounded-pill;
+  }
+
+  .scrollbar-custom::-webkit-scrollbar-thumb:hover {
+    @apply bg-clay/70;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  .golden-main {
+    width: 61.8%;
+  }
+
+  .golden-side {
+    width: 38.2%;
+  }
+}
