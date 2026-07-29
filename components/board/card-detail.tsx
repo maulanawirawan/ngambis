@@ -87,7 +87,7 @@ export function CardDetail({ card, members, onClose }: CardDetailProps) {
   }
 
   return (
-    <div className="fixed inset-y-0 right-0 z-50 w-full max-w-md bg-paper shadow-xl">
+    <div className="fixed inset-y-0 right-0 z-[100] w-full max-w-md bg-paper shadow-2xl border-l border-clay/40">
       <div className="flex h-full flex-col">
         {/* Header */}
         <div className="flex items-center justify-between border-b border-clay/30 p-4">

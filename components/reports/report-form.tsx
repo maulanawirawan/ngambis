@@ -66,7 +66,7 @@ export function ReportForm({ circleId, onClose }: ReportFormProps) {
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center bg-ink/50 p-4 md:items-center">
+    <div className="fixed inset-0 z-[100] flex items-end justify-center bg-ink/60 p-4 backdrop-blur-md animate-in fade-in duration-200 md:items-center">
       <div className="max-h-[90dvh] w-full max-w-lg overflow-y-auto rounded-hero bg-paper p-6 scrollbar-custom">
         <div className="mb-6 flex items-center justify-between">
           <h2 className="font-display text-2xl font-bold text-ink">

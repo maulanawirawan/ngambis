@@ -64,7 +64,7 @@ export function OrbitDock({ items, activeIndex }: OrbitDockProps) {
       {/* Visual dock */}
       <div
         ref={containerRef}
-        className="fixed bottom-0 left-0 right-0 z-50 flex justify-center pb-3 md:pb-5 pointer-events-none"
+        className="fixed bottom-0 left-0 right-0 z-40 flex justify-center pb-3 md:pb-5 pointer-events-none"
         role="navigation"
         aria-label="Navigasi utama"
       >
@@ -72,11 +72,6 @@ export function OrbitDock({ items, activeIndex }: OrbitDockProps) {
           className="relative pointer-events-auto touch-pan-x"
           onPanEnd={handlePanEnd}
         >
-          {/* Orbit arc background */}
-          <div className="pointer-events-none absolute -top-6 left-1/2 h-28 w-64 -translate-x-1/2 overflow-hidden opacity-60">
-            <div className="absolute bottom-0 left-1/2 h-56 w-56 -translate-x-1/2 rounded-full border border-clay/30 bg-paper/30 backdrop-blur-xs shadow-xs" />
-          </div>
-
           {/* Active indicator */}
           <motion.div
             className="absolute -top-1.5 left-1/2 h-1 w-8 -translate-x-1/2 rounded-pill bg-coral shadow-xs"

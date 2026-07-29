@@ -43,6 +43,21 @@ export function CreateCircleForm({ onClose }: CreateCircleFormProps) {
       return;
     }
 
+    // Ensure profile row exists for current user
+    const { data: existingProfile } = await supabase
+      .from("profiles")
+      .select("id")
+      .eq("id", user.id)
+      .single();
+
+    if (!existingProfile) {
+      await supabase.from("profiles").upsert({
+        id: user.id,
+        username: user.user_metadata?.username || `user_${user.id.slice(0, 8)}`,
+        display_name: user.user_metadata?.display_name || "User",
+      });
+    }
+
     // Generate slug
     const slug = name
       .toLowerCase()
@@ -62,25 +77,31 @@ export function CreateCircleForm({ onClose }: CreateCircleFormProps) {
       .single();
 
     if (createError) {
-      setError("Gagal membuat circle. Coba lagi.");
+      setError(createError.message || "Gagal membuat circle. Coba lagi.");
       setLoading(false);
       return;
     }
 
     // Add creator as owner
-    await supabase.from("circle_members").insert({
+    const { error: memberError } = await supabase.from("circle_members").insert({
       circle_id: circle.id,
       user_id: user.id,
       role: "owner",
       status: "active",
     });
 
+    if (memberError) {
+      setError(memberError.message || "Gagal menambahkan member.");
+      setLoading(false);
+      return;
+    }
+
     router.refresh();
     onClose();
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-ink/50 p-4">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-ink/60 p-4 backdrop-blur-md animate-in fade-in duration-200">
       <div className="w-full max-w-md rounded-hero bg-paper p-6">
         <div className="mb-6 flex items-center justify-between">
           <h2 className="font-display text-2xl font-bold text-ink">

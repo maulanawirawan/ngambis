@@ -76,16 +76,6 @@ export function Header({
 
         {/* User area */}
         <div className="flex items-center gap-3">
-          {/* Notification Icon */}
-          <button
-            type="button"
-            className="focus-ring relative flex h-10 w-10 items-center justify-center rounded-full text-ink/70 transition-colors hover:bg-clay/20 hover:text-ink"
-            title="Notifikasi"
-          >
-            <Bell className="h-5 w-5 shrink-0" />
-            <span className="absolute right-2.5 top-2.5 h-2 w-2 rounded-full bg-coral ring-2 ring-canvas" />
-          </button>
-
           {/* User menu dropdown toggle */}
           <div className="relative">
             <button
